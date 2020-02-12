@@ -6,3 +6,11 @@ GPU_programming/.vs/GPU_programming/v16/ipch/AutoPCH/468e3dca1a35b4b1/KERNEL.ipc
 GPU_programming/GPU_programming.sln
 GPU_programming/GPU_programming/GPU_programming.vcxproj
 GPU_programming/GPU_programming/GPU_programming.vcxproj.user
+GPU_programming/.vs/GPU_programming/v16/ipch/AutoPCH/cbe6aadd12272d76/GALAXIES.ipch
+GPU_programming/GPU_programming/x64/Debug/galaxies.cu.cache
+GPU_programming/GPU_programming/x64/Debug/galaxies.cu144808572.deps
+GPU_programming/GPU_programming/x64/Debug/GPU_programming.log
+GPU_programming/GPU_programming/x64/Debug/GPU_programming.tlog/CudaCompile.read.1u.tlog
+GPU_programming/GPU_programming/x64/Debug/GPU_programming.tlog/CudaCompile.write.1u.tlog
+GPU_programming/GPU_programming/x64/Debug/GPU_programming.tlog/GPU_programming.lastbuildstate
+GPU_programming/GPU_programming/x64/Debug/GPU_programming.tlog/unsuccessfulbuild
