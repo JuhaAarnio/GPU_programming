@@ -2,32 +2,38 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <stdio.h>
+#include <fstream>
+using namespace std;
 
 const int blockSize = 32;
 const int N = 32;
-const int GALAXY_COUNT = 100000;
+const int GALAXY_COUNT = 200000;
 
 __global__ void calculateAngles(char* a, int* b) {
-    
+    float* d_realGalaxies; cudaMalloc(&d_realGalaxies, 100000 * sizeof(float));
+    float* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, 100000 * sizeof(float));
 }
 
-char* readFile(char* filename) {
+float* readFile(char* filename) {
+    ifstream file;
     int i = 0;
-    FILE* fp;
-    char* coordinates{};
-    char* galaxies[GALAXY_COUNT];
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        printf("Unable to open the file");
+    float coordinates;
+    float* galaxies = new float[GALAXY_COUNT];
+    file.open(filename);
+    if (!file) {
+        printf("Error opening the file");
+        exit(1);
     }
-    while (fgets(coordinates, GALAXY_COUNT, fp) != NULL) {
+    while (file >> coordinates)
+    {
         galaxies[i] = coordinates;
-        i++;
+        ++i;
     }
+    file.close();
     return galaxies;
 }
 
 int main() {
-    char* realGalaxies = readFile("data_100k_arcmin.txt");
-    char* syntheticGalaxies = readFile("flat_100k_arcmin.txt");
+    float* h_realGalaxies = readFile("data_100k_arcmin.txt");
+    float* h_syntheticGalaxies = readFile("flat_100k_arcmin.txt");
 }
