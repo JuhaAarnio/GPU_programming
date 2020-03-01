@@ -10,14 +10,13 @@ using namespace std;
 const int blockSize = 32;
 const int GALAXY_COUNT = 200000;
 
-__global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxies, tuple<float, float>* d_dotProducts) {
+__global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxies, float* d_dotProducts) {
 	float dotProduct = 0;
-	tuple<float, float>* coordinatePairs;
-	for (int i = 0; i < 50000; i++)
+	for (int i = 0; i < 25000; ++i)
 	{
-		coordinatePairs[i] = make_tuple(d_realGalaxies[i], d_realGalaxies[i + 2]);
-		i = i * 2;
-	}
+		dotProduct = d_realGalaxies[i] * d_realGalaxies[i + 2] + d_realGalaxies[i + 1] * d_realGalaxies[i + 3];
+		d_dotProducts[i] = dotProduct;
+	} 
 }
 
 float* readFile(char* filename) {
@@ -58,7 +57,7 @@ int main() {
 	// Execute the function on GPU
 	calculateAngles <<<blocksInGrid, threadsInBlock>>> (d_realGalaxies, d_syntheticGalaxies, d_dotProducts);
 	cudaMemcpy(h_dotProducts, d_dotProducts, arraySize, cudaMemcpyDeviceToHost);
-	for (int i = 0; i < 100000; i++)
+	for (int i = 0; i < 25000; i++)
 	{
 		printf("%f \n", h_dotProducts[i]);
 	}
