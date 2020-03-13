@@ -16,7 +16,7 @@ __global__ void calculateAngles(double* d_realGalaxies, double* d_syntheticGalax
 	int stride = blockDim.x * gridDim.x;
 	int z = 0;
 	int y = 0;
-	for (int i = index; i < 100000; i += stride)
+	for (int i = index; i < 10000000000; i += stride)
 	{
 		for (int j = 0; j < 100000; j = j + 2) {
 			d_dotProducts[z] = d_realGalaxies[y] * d_realGalaxies[j + 1] + d_realGalaxies[y + 1] * d_realGalaxies[j];
@@ -55,10 +55,10 @@ double* readFile(char* filename) {
 int main() {
 	printf("%f", conversionFactor);
 	int arraySize = (GALAXY_COUNT / 2) * sizeof(double);
-	double* galaxyAngles = new double[arraySize];
+	double* galaxyAngles = new double[arraySize * arraySize];
 	double* h_realGalaxies = readFile("data_100k_arcmin.txt");
 	double* h_syntheticGalaxies = readFile("flat_100k_arcmin.txt");
-	double* h_dotProducts = new double[arraySize];
+	double* h_dotProducts = new double[arraySize * arraySize];
 	double* d_realGalaxies; cudaMalloc(&d_realGalaxies, arraySize);
 	double* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, arraySize);
 	double* d_dotProducts; cudaMalloc(&d_dotProducts, arraySize);
@@ -71,11 +71,11 @@ int main() {
 	// Execute the function on GPU
 	calculateAngles <<<blocksInGrid, threadsInBlock>>> (d_realGalaxies, d_syntheticGalaxies, d_dotProducts);
 	cudaMemcpy(h_dotProducts, d_dotProducts, arraySize, cudaMemcpyDeviceToHost);
-	for (int i = 0; i < 100000; i++)
+	for (int i = 0; i < 1000000; i++)
 	{
 		galaxyAngles[i] = acos(h_dotProducts[i]);
 	}
-	for (int i = 0; i < 100000; i++)
+	for (int i = 0; i < 1000000; i++)
 	{
 		printf("%f \n", galaxyAngles[i]);
 	}
