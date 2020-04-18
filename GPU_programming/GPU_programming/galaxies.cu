@@ -8,10 +8,10 @@ using namespace std;
 
 const int blockSize = 32;
 const int GALAXY_COUNT = 200000;
-const double pi = 3.141592653589;
-const double conversionFactor = (double)1 / (double)60 * pi / (double)180;
+const float pi = 3.141592653589;
+const float conversionFactor = (float)1 / (float)60 * pi / (float)180;
 
-__global__ void calculateAngles(double* d_realGalaxies, double* d_syntheticGalaxies, double* d_dotProducts) {
+__global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxies, float* d_dotProducts) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int stride = blockDim.x * gridDim.x;
 	int z = 0;
@@ -32,11 +32,11 @@ __global__ void calculateAngles(double* d_realGalaxies, double* d_syntheticGalax
 	}
 }
 
-double* readFile(char* filename) {
+float* readFile(char* filename) {
 	ifstream file;
 	int i = 0;
-	double coordinates;
-	double* galaxies = new double[GALAXY_COUNT];
+	float coordinates;
+	float* galaxies = new float[GALAXY_COUNT];
 	file.open(filename);
 	if (!file) {
 		printf("Error opening the file");
@@ -54,14 +54,14 @@ double* readFile(char* filename) {
 
 int main() {
 	printf("%f", conversionFactor);
-	int arraySize = (GALAXY_COUNT / 2) * sizeof(double);
-	double* galaxyAngles = new double[arraySize * arraySize];
-	double* h_realGalaxies = readFile("data_100k_arcmin.txt");
-	double* h_syntheticGalaxies = readFile("flat_100k_arcmin.txt");
-	double* h_dotProducts = new double[arraySize * arraySize];
-	double* d_realGalaxies; cudaMalloc(&d_realGalaxies, arraySize);
-	double* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, arraySize);
-	double* d_dotProducts; cudaMalloc(&d_dotProducts, arraySize);
+	int arraySize = (GALAXY_COUNT / 2) * sizeof(float);
+	float* galaxyAngles = new float[arraySize * arraySize];
+	float* h_realGalaxies = readFile("data_100k_arcmin.txt");
+	float* h_syntheticGalaxies = readFile("flat_100k_arcmin.txt");
+	float* h_dotProducts = new float[arraySize * arraySize];
+	float* d_realGalaxies; cudaMalloc(&d_realGalaxies, arraySize);
+	float* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, arraySize);
+	float* d_dotProducts; cudaMalloc(&d_dotProducts, arraySize);
 	// Intializing the CUDA computation kernel
 	int threadsInBlock = 256;
 	int blocksInGrid = 100;
@@ -73,7 +73,7 @@ int main() {
 	cudaMemcpy(h_dotProducts, d_dotProducts, arraySize, cudaMemcpyDeviceToHost);
 	for (int i = 0; i < 1000000; i++)
 	{
-		galaxyAngles[i] = acos(h_dotProducts[i]);
+		galaxyAngles[i] = h_dotProducts[i];
 	}
 	for (int i = 0; i < 1000000; i++)
 	{
