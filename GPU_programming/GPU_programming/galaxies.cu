@@ -11,20 +11,27 @@ const int GALAXY_COUNT = 200000;
 const float pi = 3.141592653589;
 const float conversionFactor = (float)1 / (float)60 * pi / (float)180;
 
-__global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxies, float* d_dotProducts) {
+__global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxies, float* d_RdotProducts, float* d_SdotProducts) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int stride = blockDim.x * gridDim.x;
 	int z = 0;
 	int y = 0;
-	for (int i = index; i < 10000000000; i += stride)
+	for (int i = index; i < 1000000; i += stride)
 	{
-		for (int j = 0; j < 100000; j = j + 2) {
-			d_dotProducts[z] = d_realGalaxies[y] * d_realGalaxies[j + 1] + d_realGalaxies[y + 1] * d_realGalaxies[j];
-			if (d_dotProducts[z] < -1) {
-				d_dotProducts[z] == -1;
+		for (int j = 0; j < 1000; j = j + 2) {
+			d_RdotProducts[z] = d_realGalaxies[y] * d_realGalaxies[j + 1] + d_realGalaxies[y + 1] * d_realGalaxies[j];
+			if (d_RdotProducts[z] < -1) {
+				d_RdotProducts[z] = -1;
 			}
-			if (d_dotProducts[z] > 1) {
-				d_dotProducts[z] == 1;
+			if (d_RdotProducts[z] > 1) {
+				d_RdotProducts[z] = 1;
+			}
+			d_SdotProducts[z] = d_syntheticGalaxies[y] * d_syntheticGalaxies[j + 1] + d_syntheticGalaxies[y + 1] * d_syntheticGalaxies[j];
+			if (d_RdotProducts[z] < -1) {
+				d_RdotProducts[z] = -1;
+			}
+			if (d_RdotProducts[z] > 1) {
+				d_RdotProducts[z] = 1;
 			}
 			++z;
 			y = y + 2;
@@ -58,22 +65,25 @@ int main() {
 	float* galaxyAngles = new float[arraySize * arraySize];
 	float* h_realGalaxies = readFile("data_100k_arcmin.txt");
 	float* h_syntheticGalaxies = readFile("flat_100k_arcmin.txt");
-	float* h_dotProducts = new float[arraySize * arraySize];
+	float* h_RdotProducts = new float[arraySize * arraySize];
+	float* h_SdotProducts = new float[arraySize * arraySize];
 	float* d_realGalaxies; cudaMalloc(&d_realGalaxies, arraySize);
 	float* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, arraySize);
-	float* d_dotProducts; cudaMalloc(&d_dotProducts, arraySize);
+	float* d_RdotProducts; cudaMalloc(&d_RdotProducts, arraySize);
+	float* d_SdotProducts; cudaMalloc(&d_SdotProducts, arraySize);
 	// Intializing the CUDA computation kernel
 	int threadsInBlock = 256;
 	int blocksInGrid = 100;
 	cudaMemcpy(d_realGalaxies, h_realGalaxies, arraySize, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_syntheticGalaxies, h_syntheticGalaxies, arraySize, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dotProducts, h_dotProducts, arraySize, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_RdotProducts, h_RdotProducts, arraySize, cudaMemcpyHostToDevice);
 	// Execute the function on GPU
-	calculateAngles <<<blocksInGrid, threadsInBlock>>> (d_realGalaxies, d_syntheticGalaxies, d_dotProducts);
-	cudaMemcpy(h_dotProducts, d_dotProducts, arraySize, cudaMemcpyDeviceToHost);
+	calculateAngles <<<blocksInGrid, threadsInBlock>>> (d_realGalaxies, d_syntheticGalaxies, d_RdotProducts, d_SdotProducts);
+	cudaMemcpy(h_RdotProducts, d_RdotProducts, arraySize, cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_SdotProducts, d_SdotProducts, arraySize, cudaMemcpyDeviceToHost);
 	for (int i = 0; i < 1000000; i++)
 	{
-		galaxyAngles[i] = h_dotProducts[i];
+		galaxyAngles[i] = acos(h_RdotProducts[i]) * (180 / pi);
 	}
 	for (int i = 0; i < 1000000; i++)
 	{
