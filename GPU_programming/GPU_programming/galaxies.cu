@@ -27,11 +27,11 @@ __global__ void calculateAngles(float* d_realGalaxies, float* d_syntheticGalaxie
 				d_RdotProducts[z] = 1;
 			}
 			d_SdotProducts[z] = d_syntheticGalaxies[y] * d_syntheticGalaxies[j + 1] + d_syntheticGalaxies[y + 1] * d_syntheticGalaxies[j];
-			if (d_RdotProducts[z] < -1) {
-				d_RdotProducts[z] = -1;
+			if (d_SdotProducts[z] < -1) {
+				d_SdotProducts[z] = -1;
 			}
-			if (d_RdotProducts[z] > 1) {
-				d_RdotProducts[z] = 1;
+			if (d_SdotProducts[z] > 1) {
+				d_SdotProducts[z] = 1;
 			}
 			++z;
 			y = y + 2;
@@ -71,6 +71,7 @@ int main() {
 	float* d_syntheticGalaxies; cudaMalloc(&d_syntheticGalaxies, arraySize);
 	float* d_RdotProducts; cudaMalloc(&d_RdotProducts, arraySize);
 	float* d_SdotProducts; cudaMalloc(&d_SdotProducts, arraySize);
+	float* histogramBins = new float[arraySize * arraySize];
 	// Intializing the CUDA computation kernel
 	int threadsInBlock = 256;
 	int blocksInGrid = 100;
@@ -87,6 +88,14 @@ int main() {
 	}
 	for (int i = 0; i < 1000000; i++)
 	{
-		printf("%f \n", galaxyAngles[i]);
+		for (int j = 0; j < 720; j++) 
+		{
+			if (galaxyAngles[i] < j) {
+				histogramBins[j] += 1;
+			}
+		}
+	}
+	for (int i = 0; i < 720; i++) {
+		printf("%f \n", histogramBins[i]);
 	}
 }
